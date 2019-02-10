@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>JavaScript Hangman Game!</title>
+	<script src="C:\WordGuessGame\assets\javascript\game.js" ></script>
+	<link rel="stylesheet" type="text/css" href="C:\WordGuessGame\assets\javascript\game.js" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+	 crossorigin="anonymous">
+
+<style>
+ body {
+
+  background-image: url("http://3.bp.blogspot.com/-DZrjvqLQwEM/UJrIs18IBzI/AAAAAAAAAY8/nZGagkN_Syk/s1600/new_size_farm_final.jpg");
+ 
+  }
+  
+  .container
+  {
+  	  margin-top: 100px;
+	  opacity: 0.8;
+  }
+
+  h1 {
+  
+  text-align: center;
+
+  }
+
+  h2 {
+  	  text-align: center;
+  }
+
+  #Lose {
+  	  text-align: center;
+	  
+  }
+	 </style>
+
+
+
+
+	 </head>
+<body>
+	<div class="container">
+		<header>
+
+		</header>
+		<div class="jumbotron">
+			<h1>Welcome to the farm !!! </h1>
+			<h2 id="hangmanWord"></h2>
+			<br>
+			<hr>
+			<div class="row">
+				<h2 id="submitId" class="col-md-6">Submit a guess by typing in a letter!</h2>
+				<h2 id="guessesLeft" class="col-md-6"></h2>
+			</div>
+
+			<br>
+
+			<hr>
+			<div class="row">
+				<p id="previousGuesses" class="col-md-8"></p>
+				<hr>
+				<p id="youGuessed" class="col-md-4"></p>
+
+				<hr>
+			</div>
+
+			<div class="row">
+				<p id="Lose" class="col-md-6"></p>
+				<br>
+				<hr>
+				<p id="numberOfWins" class="col-md-6"></p>
+				<hr>
+			</div>
+
+		</div>
+	</div>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="assets/javascript/game.js"></script>
+</body>
+<script>
+
+var words = ["cow", "dog" , "sheep" , "horse" , "pig", "goat"];
+
+var HangmanGame = {
+	
+	incorrectGuessesLeft: 0,
+	winsCounter: 0,
+	hangmanWord: [],
+	guessedLetters: [],
+	revealedWord: [],
+	NumbersRevealed: 0,
+
+	
+	isGameOver: function () {
+		if (this.incorrectGuessesLeft === 0 || this.NumbersRevealed === this.hangmanWord.length) {
+			
+			this.didYouWin();
+			return true;
+		}
+		else {
+			return false;
+		}
+	},
+	
+	didYouWin: function () {
+		if (this.NumbersRevealed === this.hangmanWord.length) {
+
+			return true;
+		}
+		else {
+			return false;
+		}
+	},
+
+	isGuessCorrect: function (guess) {
+		if (this.hangmanWord.includes(guess)) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	},
+	//if a guess is correct, add it to the revealed word at the desired index
+	//return number of letters revealed by each check
+	reveal: function (guess) {
+		var revealedLetters = 0;
+		for (var i = 0; i < this.revealedWord.length; i++) {
+
+			if (this.hangmanWord[i] === guess) {
+				this.revealedWord[i] = guess;
+				revealedLetters++;
+			}
+			else { };
+		}
+		return revealedLetters;
+	},
+	//submit a user guess to the game: add guess to guessed letters if it hasn't been guessed already, check if guess is correct, call reveal() and add result to find win condition, finally decrement guesses left if user is wrong
+	submitGuess: function (guess) {
+
+		if (!this.guessedLetters.includes(guess)) {
+			this.guessedLetters.push(guess);
+			if (this.isGuessCorrect(guess)) {
+
+				// this.reveal(guess);
+				this.NumbersRevealed += this.reveal(guess);
+			}
+			else {
+				this.incorrectGuessesLeft--;
+			}
+			return true;
+		}
+		else {
+			return false;
+		}
+	},
+	//set opening game conditions
+	initializeGame: function (tmpWord) {
+		this.incorrectGuessesLeft = 6;
+		this.hangmanWord = tmpWord;
+		this.guessedLetters = [];
+		this.revealedWord = Array(tmpWord.length).fill(" ");
+		this.NumbersRevealed = 0;
+	}
+}
+//object for user interface properties and methods
+var drawScreen = {
+	spanList: [],
+	
+	//Display number of times user has won in this browsing session
+	showWins: function () {
+		document.getElementById("numberOfWins").textContent = "You've won " + HangmanGame.winsCounter + " games";
+	},
+	//ask user to keep playing if game is over. If user loses display word user should have guessed . If user wins play the winning sound and display win statement.
+	showEnd: function () {
+		if (HangmanGame.isGameOver()) {
+			document.getElementById("submitId").textContent = "Welcome to the Farm, press any key to start!";
+			if (!HangmanGame.didYouWin()) {
+				document.getElementById("Lose").textContent = "You lose!";
+				document.getElementById("hangmanWord").textContent = HangmanGame.hangmanWord.join("");
+			}
+			else {
+				document.getElementById("Lose").textContent = "You've won the game!";
+				
+			}
+
+		}
+		//sets value to empty so the user is not being told that they won or that they lost while they are playing
+		else {
+			document.getElementById("Lose").textContent = "";
+		}
+
+
+	},
+	//set initial display values: span elements are removed if there was a previous game, new span elements are created and initialized to blank, pause win sound, and ask the user to submit a guess
+	initDisplay: function () {
+		this.spanList = [];
+		parent = document.getElementById("hangmanWord");
+		while (parent.hasChildNodes()) {
+			parent.removeChild(parent.childNodes[0]);
+		}
+
+		for (var i = 0; i < HangmanGame.revealedWord.length; i++) {
+			var blank = document.createElement("span");
+			this.spanList.push(blank)
+			document.getElementById("hangmanWord").appendChild(blank);
+			blank.textContent = " _ ";
+		}
+		
+		document.getElementById("submitId").textContent = "Submit a guess by typing in a letter!";
+	},
+	//update the spans as the user guesses correctly, at the correct index to display the finished word
+	drawWord: function () {
+		for (var i = 0; i < HangmanGame.revealedWord.length; i++) {
+			blank = this.spanList[i];
+			if (HangmanGame.revealedWord[i] === " ") {
+				blank.textContent = " _ ";
+			}
+			else {
+				blank.textContent = HangmanGame.revealedWord[i];
+
+			}
+
+		}
+	},
+	//show the previously guessed letters
+	showGuesses: function () {
+		var list = "  ";
+		for (var i = 0; i < HangmanGame.guessedLetters.length; i++) {
+			list += " " + HangmanGame.guessedLetters[i].toString() + " ";
+		}
+		document.getElementById("previousGuesses").textContent = "Previously guessed: " + list;
+	},
+	//Displays remaining guesses available to user
+	guessesLeft: function () {
+		document.getElementById("guessesLeft").textContent = "You have " + HangmanGame.incorrectGuessesLeft + " guesses left";
+	},
+	//displays the user's current guess
+	currentGuess: function (guess) {
+		var youGuess = document.getElementById("youGuessed")
+		youGuess.textContent = guess;
+		youGuess.setAttribute("style", "font-size: 3em;");
+	},
+	//calls methods necessary to display the game
+	displayGame: function (guess) {
+		this.showWins();
+		this.showGuesses();
+		this.showEnd();
+		this.drawWord();
+		this.guessesLeft();
+		this.currentGuess(guess);
+
+	}
+}
+//initialize the word for the game to a random choice from the globally declared hangmanDictionary, then initialize the game logic, set up the initial display of the game, and call necessary display methods
+function setUpGame() {
+	var tmpWord = Array.from(words[Math.floor(Math.random() * words.length)]);
+	HangmanGame.initializeGame(tmpWord);
+	drawScreen.initDisplay();
+	drawScreen.displayGame();
+}
+
+function playGame(guess) {
+	if (!HangmanGame.isGameOver()) {
+		HangmanGame.submitGuess(guess);
+		drawScreen.displayGame(guess);
+
+
+	}
+	else {
+		if (HangmanGame.didYouWin()) {
+			HangmanGame.winsCounter++
+		}
+		setUpGame();
+
+	}
+}
+//set up an initial hangman game
+setUpGame();
+//get user's input
+document.onkeyup = function (event) {
+	// Determines which key was pressed.
+	var guess = event.key.toLowerCase();
+	//make sure the input is a letter
+	if (('a' <= guess && guess <= 'z') && guess.length === 1) {
+		playGame(guess);
+	}
+	else {
+
+	}
+}
+</script>
+
+
+</html>
